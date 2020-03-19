@@ -4,7 +4,7 @@ consolidated_limit: 7
 region_directories:
   - auvergne-rhone-alpes
   - bourgogne-franche-comte
-#  - bretagne
+  - bretagne
   - centre-val-de-loire
   - corse
   - grand-est
