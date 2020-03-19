@@ -21,6 +21,7 @@ import numpy as np
 import collections
 import datetime
 import numpy as np
+from folium.features import DivIcon
 
 import france_data
 
@@ -183,7 +184,15 @@ class CovidData(object):
                                   color=custom_color,
                                   fill_color=custom_color,
                                   fill_opacity=0.5
-                             ).add_child(folium.Popup(str(nom).replace('è','e').replace('é','e')+'- nombre de cas au '+str(date)+': ' +str(ra))).add_to(self.map)      
+                             ).add_child(folium.Popup(str(nom).replace('è','e').replace('é','e')+'- nombre de cas au '+str(date)+': ' +str(ra))).add_to(self.map)
+                        folium.map.Marker(
+                                  location=self.Coordinates[regions[region]['donneesRegionales']['code']],
+                                  icon=DivIcon(
+                                            icon_size=(150,36),
+                                            icon_anchor=(0,0),
+                                            html='<div style="font-size: 24pt">%s</div>' % str(ra),
+                                            )
+    ).add_to(m)
               if regions[region].get('donneesDepartementales') != None:
                    for i, departement in enumerate(regions[region]['donneesDepartementales']):
                         if regions[region]['donneesDepartementales'][i].get('code') != None:
