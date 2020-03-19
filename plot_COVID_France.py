@@ -192,7 +192,7 @@ class CovidData(object):
                                             icon_anchor=(0,0),
                                             html='<div style="font-size: 24pt">%s</div>' % str(ra),
                                             )
-    ).add_to(m)
+                                  ).add_to(map)
               if regions[region].get('donneesDepartementales') != None:
                    for i, departement in enumerate(regions[region]['donneesDepartementales']):
                         if regions[region]['donneesDepartementales'][i].get('code') != None:
