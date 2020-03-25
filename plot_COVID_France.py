@@ -29,7 +29,7 @@ colormap =cm.linear.YlOrRd_09.scale(0, 500)
      
 legend_html = '''
 <div style="position: fixed;
-     padding: .5em; top: 10px; left: 60px; width: 30em; height: 5.5em;
+     padding: .5em; top: 10px; left: 60px; width: 30em; height: 11em;
      border:2px solid grey; z-index:9999; font-size:14px; background: #eee;
      "> &nbsp; Nombre de cas de COVID-19 par departement pour la France metropolitaine<br>
      &nbsp; Donnees tirees de https://github.com/opencovid19-fr/data  <br>
@@ -197,34 +197,42 @@ class CovidData(object):
          difference = data['difference'].values.astype('str')
          for la,lo,ra,no,di,ld,pd in zip(latitude,longitude,radius,nom,difference,latest_date,penultimate_date):
               label=unidecode.unidecode(no.replace("'","-"))+': '+str(ra)[:-2]+ ' cas confirmes au '+str(ld)+'. +'+str(di)[:-2]+' cas depuis le '+str(pd)+'.'
-              if ra<50:
-                   folium.Circle(
-                       location=[la,lo],
-                       radius=17000,
-                       fill=True,
-                       opacity = 0.5,
-                       color='white',
-                       fill_color='white',
-                       fill_opacity=0.5
-                   ).add_child(folium.Popup(label)).add_to(self.map)
-              elif ra<500:
-                   folium.Circle(
+              folium.Circle(
                        location=[la,lo],
                        radius=5000*np.log(ra),
                        fill=True,
-                       color='orange',
+                       color='grey',
                        fill_color=colormap(ra),
                        fill_opacity=0.8
                    ).add_child(folium.Popup(label)).add_to(self.map)
-              else:
-                  folium.Circle(
-                       location=[la,lo],
-                       radius=31073,
-                       fill=True,
-                       color='red',
-                       fill_color='red',
-                       fill_opacity=1
-                   ).add_child(folium.Popup(label)).add_to(self.map)
+#              if ra<50:
+#                   folium.Circle(
+#                       location=[la,lo],
+#                       radius=17000,
+#                       fill=True,
+#                       opacity = 0.5,
+#                       color='white',
+#                       fill_color='white',
+#                       fill_opacity=0.5
+#                   ).add_child(folium.Popup(label)).add_to(self.map)
+#              elif ra<500:
+#                   folium.Circle(
+#                       location=[la,lo],
+#                       radius=5000*np.log(ra),
+#                       fill=True,
+#                       color='orange',
+#                       fill_color=colormap(ra),
+#                       fill_opacity=0.8
+#                   ).add_child(folium.Popup(label)).add_to(self.map)
+#              else:
+#                  folium.Circle(
+#                       location=[la,lo],
+#                       radius=31073,
+#                       fill=True,
+#                       color='red',
+#                       fill_color='red',
+#                       fill_opacity=1
+#                   ).add_child(folium.Popup(label)).add_to(self.map)
 
                
              
