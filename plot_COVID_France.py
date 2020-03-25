@@ -29,8 +29,8 @@ colormap =cm.linear.YlOrRd_09.scale(0, 500)
      
 legend_html = '''
 <div style="position: fixed;
-     bottom: 50px; left: 50px; width: 500px; height: 115px;
-     background: white; border:2px solid grey; z-index:9999; font-size:14px;
+     padding: .5em; top: 10px; left: 60px; width: 30em; height: 5.5em;
+     border:2px solid grey; z-index:9999; font-size:14px; background: #eee;
      "> &nbsp; Nombre de cas de COVID-19 par departement pour la France metropolitaine<br>
      &nbsp; Donnees tirees de https://github.com/opencovid19-fr/data  <br>
      &nbsp; Carte interactive creee par: &nbsp;</i><br>
@@ -243,10 +243,25 @@ CODA.map.add_child(colormap)
 
 #CODA.map.save("./test_map.html")
 
+page_template = '''<!doctype html>
+
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+
+  <title>Carte de la France du Covid-19</title>
+</head>
+
+<body>
+{map}
+</body>
+</html>
+'''
+
 app = Flask(__name__)
 @app.route("/")
 def display_map():
-     return CODA.map._repr_html_()
+     return page_template.format(map=CODA.map._repr_html_())
 
 
 if __name__ == "__main__":
