@@ -24,12 +24,12 @@ import numpy as np
 import pandas as pd
 import unidecode
 import branca.colormap as cm
-colormap =cm.linear.YlOrRd_09.scale(0, 500)
+colormap =cm.linear.YlOrRd_09.scale(0, 1000)
 
      
 legend_html = '''
 <div style="position: fixed;
-     padding: .5em; top: 10px; left: 60px; width: 30em; height: 11em;
+     padding: .5em; top: 10px; left: 60px; width: 30em; height: 10em;
      border:2px solid grey; z-index:9999; font-size:14px; background: #eee;
      "> &nbsp; Nombre de cas de COVID-19 par departement pour la France metropolitaine<br>
      &nbsp; Donnees tirees de https://github.com/opencovid19-fr/data  <br>
@@ -50,11 +50,11 @@ class CovidData(object):
                   'DEP-56': [47.84638889, -2.81], 
                   'DEP-44': [47.36138889, -1.682222222], 
                   'DEP-35': [48.15444444, -1.638611111],
-                  'DEP-51': [48.94916667, 4.238611111], 
+                  'DEP-51': [48.9405, 4.24555], 
                   'DEP-10': [48.30444444, 4.161666667], 
-                  'DEP-52': [48.98944444, 5.381666667], 
+                  'DEP-52': [48.1022, 5.18945], 
                   'DEP-08': [49.61555556, 4.640833333], 
-                  'DEP-55': [48.98944444, 5.381666667], 
+                  'DEP-55': [48.98944444, 5.37408], 
                   'DEP-54': [48.78694444, 6.165], 
                   'DEP-57': [49.03722222, 6.663333333], 
                   'DEP-88': [48.19666667, 6.3805555567], 
@@ -173,7 +173,7 @@ class CovidData(object):
 
         
     def drop_rows_for_which_confirmed_cases_are_missing(self):
-         self.merged_data=self.merged_data.dropna(subset=['cas_confirmes'])
+         self.merged_data=self.merged_data.dropna(subset=['hospitalises'])
 
     def select_last_date(self):
          self.merged_data_last=self.merged_data.sort_values('date').groupby('maille_code').tail(1)
@@ -184,11 +184,11 @@ class CovidData(object):
 
     def compute_change_in_cases(self):
           self.merged_data_diff=self.merged_data_last.merge(self.merged_data_penultimate, left_on='maille_code', right_on='maille_code')
-          self.merged_data_diff['difference']=self.merged_data_diff['cas_confirmes_x']-self.merged_data_diff['cas_confirmes_y']
+          self.merged_data_diff['difference']=self.merged_data_diff['hospitalises_x']-self.merged_data_diff['hospitalises_y']
           self.merged_data_diff.to_csv('difftest.csv')
 
     def plot_departements(self,data,custom_color):
-         radius = data['cas_confirmes_x'].values.astype('float')
+         radius = data['hospitalises_x'].values.astype('float')
          latitude = data['0_x'].values.astype('float')
          longitude = data['1_y'].values.astype('float')
          nom = data['maille_nom_x'].values.astype('str')   
@@ -196,7 +196,7 @@ class CovidData(object):
          penultimate_date = data['date_y'].values.astype('str')         
          difference = data['difference'].values.astype('str')
          for la,lo,ra,no,di,ld,pd in zip(latitude,longitude,radius,nom,difference,latest_date,penultimate_date):
-              label=unidecode.unidecode(no.replace("'","-"))+': '+str(ra)[:-2]+ ' cas confirmes au '+str(ld)+'. +'+str(di)[:-2]+' cas depuis le '+str(pd)+'.'
+              label=unidecode.unidecode(no.replace("'","-"))+': '+str(ra)[:-2]+ ' patients hospitalises au '+str(ld)+'. +'+str(di)[:-2]+' cas depuis le '+str(pd)+'.'
               folium.Circle(
                        location=[la,lo],
                        radius=5000*np.log(ra),
