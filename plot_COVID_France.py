@@ -42,6 +42,7 @@ legend_html = '''
 
 class CovidData(object):
 
+
     def __init__(self):
          self.Confirmed_Cases = pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
          self.Departements = {                
@@ -168,6 +169,7 @@ class CovidData(object):
          self.merged_data_last = None
          self.merged_data_penultimate = None
 
+
     def merge_data_and_coordinates(self):
          self.merged_data=self.Confirmed_Cases.merge(self.Coordinates, left_on='maille_code', right_on='maille_code')
 
@@ -236,13 +238,14 @@ class CovidData(object):
 
                
 
-def create_map():             
+def create_map():
+            
      CODA=CovidData()
      CODA.merge_data_and_coordinates()
      CODA.drop_rows_for_which_confirmed_cases_are_missing()
      CODA.select_penultimate_date()
      CODA.select_last_date()
-     CODA.compute_change_in_cases()
+     CODA.compute_change_in_cases()     
      CODA.plot_departements(CODA.merged_data_diff,'grey')
 
      CODA.map.get_root().html.add_child(folium.Element(legend_html))
@@ -250,6 +253,8 @@ def create_map():
      CODA.map.add_child(colormap)
 
      return CODA
+
+
 
 #CODA.map.save("./test_map.html")
 
@@ -268,17 +273,23 @@ page_template = '''<!doctype html>
 </html>
 '''
 
-CODA = None
+Coda = None
+
+def update_map():
+     global Coda
+     Coda = create_map()
 
 app = Flask(__name__)
 @app.route("/")
 def display_map():
-     return page_template.format(map=CODA.map._repr_html_())
+     return page_template.format(map=Coda.map._repr_html_())
 
 update_prefix = os.environ.get('UPDATE_PREFIX', '')
 @app.route("/{prefix}update".format(prefix=update_prefix), methods=['POST'])
 def update_data():
-     CODA = create_map()
+     update_map()
+     return ""
+
 
 form_template = '''<!doctype html>
 
@@ -301,7 +312,7 @@ def update_form():
      return form_template.format(prefix=update_prefix)
 
 
-update_data()
+update_map()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
