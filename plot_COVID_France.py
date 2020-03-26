@@ -312,7 +312,7 @@ def update_form():
      return form_template.format(prefix=update_prefix)
 
 
-update_map()
 
 if __name__ == "__main__":
+    update_map()
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
