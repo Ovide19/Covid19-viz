@@ -235,19 +235,21 @@ class CovidData(object):
 #                   ).add_child(folium.Popup(label)).add_to(self.map)
 
                
-             
-            
-CODA=CovidData()
-CODA.merge_data_and_coordinates()
-CODA.drop_rows_for_which_confirmed_cases_are_missing()
-CODA.select_penultimate_date()
-CODA.select_last_date()
-CODA.compute_change_in_cases()
-CODA.plot_departements(CODA.merged_data_diff,'grey')
 
-CODA.map.get_root().html.add_child(folium.Element(legend_html))
-colormap.caption = 'Nombre de cas de COVID-19 par departement (Source: opencovid19-fr)'
-CODA.map.add_child(colormap)
+def create_map():             
+     CODA=CovidData()
+     CODA.merge_data_and_coordinates()
+     CODA.drop_rows_for_which_confirmed_cases_are_missing()
+     CODA.select_penultimate_date()
+     CODA.select_last_date()
+     CODA.compute_change_in_cases()
+     CODA.plot_departements(CODA.merged_data_diff,'grey')
+
+     CODA.map.get_root().html.add_child(folium.Element(legend_html))
+     colormap.caption = 'Nombre de cas de COVID-19 par departement (Source: opencovid19-fr)'
+     CODA.map.add_child(colormap)
+
+     return CODA
 
 #CODA.map.save("./test_map.html")
 
@@ -266,11 +268,40 @@ page_template = '''<!doctype html>
 </html>
 '''
 
+CODA = None
+
 app = Flask(__name__)
 @app.route("/")
 def display_map():
      return page_template.format(map=CODA.map._repr_html_())
 
+update_prefix = os.environ.get('UPDATE_PREFIX', '')
+@app.route("/{prefix}update".format(prefix=update_prefix), methods=['POST'])
+def update_data():
+     CODA = create_map()
+
+form_template = '''<!doctype html>
+
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+
+  <title>Mettre à jour la carte de la France du Covid-19</title>
+</head>
+
+<body>
+<form action="/{prefix}update" method="POST">
+<input type="submit" value="Update!">
+</body>
+</html>
+'''
+
+@app.route("/{prefix}updateform".format(prefix=update_prefix))
+def update_form():
+     return form_template.format(prefix=update_prefix)
+
+
+update_data()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
