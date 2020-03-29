@@ -286,6 +286,7 @@ update_prefix = os.environ.get('UPDATE_PREFIX', '')
 def update_data():
      global Coda
      Coda = create_map()
+     print("data updated: {obj}".format(obj=Coda))
      return ""
 
 
