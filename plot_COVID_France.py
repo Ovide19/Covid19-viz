@@ -275,9 +275,6 @@ page_template = '''<!doctype html>
 
 Coda = None
 
-def update_map():
-     global Coda
-     Coda = create_map()
 
 app = Flask(__name__)
 @app.route("/")
@@ -287,7 +284,8 @@ def display_map():
 update_prefix = os.environ.get('UPDATE_PREFIX', '')
 @app.route("/{prefix}update".format(prefix=update_prefix), methods=['POST'])
 def update_data():
-     update_map()
+     global Coda
+     Coda = create_map()
      return ""
 
 
