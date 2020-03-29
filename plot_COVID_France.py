@@ -312,5 +312,5 @@ def update_form():
 
 
 if __name__ == "__main__":
-    update_map()
+    update_data()
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
