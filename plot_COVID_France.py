@@ -44,10 +44,10 @@ legend_html = '''
 
 
 def download_csv_from_github():
-     download_time=str(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
-     print(download_time)
+     download_start_time=str(datetime.datetime.now())
      data=pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
-     return data, download_time
+     download_end_time=str(datetime.datetime.now())   
+     return data, download_start_time, download_end_time
 
 
 
@@ -232,7 +232,7 @@ def create_map():
      CODA.map.get_root().html.add_child(folium.Element(legend_html))
 #     colormap.caption = 'Nombre de deces de COVID-19 par departement (Source: opencovid19-fr)'
 #     colormap.caption = str(datetime.datetime.now())
-     colormap.caption = str("Download time: "+CODA.download_time)
+     colormap.caption = str("Download time: "+CODA.download_start_time+" to "+CODA.download_end_time)
 
      CODA.map.add_child(colormap)
      
