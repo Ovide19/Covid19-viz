@@ -25,13 +25,15 @@ import pandas as pd
 import unidecode
 import branca.colormap as cm
 colormap =cm.linear.YlOrRd_09.scale(0, 1000)
-
+from apscheduler.schedulers.background import BackgroundScheduler
+import time
+import datetime
      
 legend_html = '''
 <div style="position: fixed;
      padding: .5em; top: 10px; left: 60px; width: 30em; height: 10em;
      border:2px solid grey; z-index:9999; font-size:14px; background: #eee;
-     "> &nbsp; Nombre de cas de COVID-19 par departement pour la France metropolitaine<br>
+     "> &nbsp; Nombre de deces dus COVID-19 par departement pour la France metropolitaine<br>
      &nbsp; Donnees tirees de https://github.com/opencovid19-fr/data  <br>
      &nbsp; Carte interactive creee par: &nbsp;</i><br>
      &nbsp; - Sheldon Warden: sheldon.warden@protonmail.com &nbsp;</i><br>
@@ -40,11 +42,21 @@ legend_html = '''
 '''
 
 
+
+def download_csv_from_github():
+
+     download_time=str(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+     print(download_time)
+     data=pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
+     return data, download_time
+
+
+
 class CovidData(object):
-
-
+   
     def __init__(self):
-         self.Confirmed_Cases = pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
+#         self.Data = pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
+         self.Data, self.download_time = download_csv_from_github()
          self.Departements = {                
                   'DEP-29': [48.26111111, -4.058888889], 
                   'DEP-22': [48.44111111, -2.864166667], 
@@ -171,11 +183,11 @@ class CovidData(object):
 
 
     def merge_data_and_coordinates(self):
-         self.merged_data=self.Confirmed_Cases.merge(self.Coordinates, left_on='maille_code', right_on='maille_code')
+         self.merged_data=self.Data.merge(self.Coordinates, left_on='maille_code', right_on='maille_code')
 
         
     def drop_rows_for_which_confirmed_cases_are_missing(self):
-         self.merged_data=self.merged_data.dropna(subset=['hospitalises'])
+         self.merged_data=self.merged_data.dropna(subset=['deces'])
 
     def select_last_date(self):
          self.merged_data_last=self.merged_data.sort_values('date').groupby('maille_code').tail(1)
@@ -186,11 +198,11 @@ class CovidData(object):
 
     def compute_change_in_cases(self):
           self.merged_data_diff=self.merged_data_last.merge(self.merged_data_penultimate, left_on='maille_code', right_on='maille_code')
-          self.merged_data_diff['difference']=self.merged_data_diff['hospitalises_x']-self.merged_data_diff['hospitalises_y']
+          self.merged_data_diff['difference']=self.merged_data_diff['deces_x']-self.merged_data_diff['deces_y']
           self.merged_data_diff.to_csv('difftest.csv')
 
     def plot_departements(self,data,custom_color):
-         radius = data['hospitalises_x'].values.astype('float')
+         radius = data['deces_x'].values.astype('float')
          latitude = data['0_x'].values.astype('float')
          longitude = data['1_y'].values.astype('float')
          nom = data['maille_nom_x'].values.astype('str')   
@@ -198,7 +210,7 @@ class CovidData(object):
          penultimate_date = data['date_y'].values.astype('str')         
          difference = data['difference'].values.astype('str')
          for la,lo,ra,no,di,ld,pd in zip(latitude,longitude,radius,nom,difference,latest_date,penultimate_date):
-              label=unidecode.unidecode(no.replace("'","-"))+': '+str(ra)[:-2]+ ' patients hospitalises au '+str(ld)+'. +'+str(di)[:-2]+' cas depuis le '+str(pd)+'.'
+              label=unidecode.unidecode(no.replace("'","-"))+': '+str(ra)[:-2]+ ' nombre de deces lies au '+str(ld)+'. +'+str(di)[:-2]+' cas depuis le '+str(pd)+'.'
               folium.Circle(
                        location=[la,lo],
                        radius=5000*np.log(ra),
@@ -207,39 +219,9 @@ class CovidData(object):
                        fill_color=colormap(ra),
                        fill_opacity=0.8
                    ).add_child(folium.Popup(label)).add_to(self.map)
-#              if ra<50:
-#                   folium.Circle(
-#                       location=[la,lo],
-#                       radius=17000,
-#                       fill=True,
-#                       opacity = 0.5,
-#                       color='white',
-#                       fill_color='white',
-#                       fill_opacity=0.5
-#                   ).add_child(folium.Popup(label)).add_to(self.map)
-#              elif ra<500:
-#                   folium.Circle(
-#                       location=[la,lo],
-#                       radius=5000*np.log(ra),
-#                       fill=True,
-#                       color='orange',
-#                       fill_color=colormap(ra),
-#                       fill_opacity=0.8
-#                   ).add_child(folium.Popup(label)).add_to(self.map)
-#              else:
-#                  folium.Circle(
-#                       location=[la,lo],
-#                       radius=31073,
-#                       fill=True,
-#                       color='red',
-#                       fill_color='red',
-#                       fill_opacity=1
-#                   ).add_child(folium.Popup(label)).add_to(self.map)
-
                
 
 def create_map():
-            
      CODA=CovidData()
      CODA.merge_data_and_coordinates()
      CODA.drop_rows_for_which_confirmed_cases_are_missing()
@@ -249,11 +231,14 @@ def create_map():
      CODA.plot_departements(CODA.merged_data_diff,'grey')
 
      CODA.map.get_root().html.add_child(folium.Element(legend_html))
-     colormap.caption = 'Nombre de cas de COVID-19 par departement (Source: opencovid19-fr)'
+#     colormap.caption = 'Nombre de deces de COVID-19 par departement (Source: opencovid19-fr)'
+#     colormap.caption = str(datetime.datetime.now())
+     colormap.caption = str(CODA.download_time)
+
      CODA.map.add_child(colormap)
+     
 
      return CODA
-
 
 
 #CODA.map.save("./test_map.html")
@@ -273,21 +258,23 @@ page_template = '''<!doctype html>
 </html>
 '''
 
-Coda = None
 
+#Coda = None
 
 app = Flask(__name__)
-@app.route("/")
-def display_map():
-     return page_template.format(map=Coda.map._repr_html_())
 
-update_prefix = os.environ.get('UPDATE_PREFIX', '')
-@app.route("/{prefix}update".format(prefix=update_prefix), methods=['POST'])
-def update_data():
-     global Coda
+
+def print_date_time():
+    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p")) #Used for test purpose only
+
+
+
+@app.route("/")
+def test():
+#     global Coda
      Coda = create_map()
      print("data updated: {obj}".format(obj=Coda))
-     return ""
+     return page_template.format(map=Coda.map._repr_html_())
 
 
 form_template = '''<!doctype html>
@@ -297,7 +284,7 @@ form_template = '''<!doctype html>
   <meta charset="utf-8">
 
   <title>Mettre à jour la carte de la France du Covid-19</title>
-</head>
+S</head>
 
 <body>
 <form action="/{prefix}update" method="POST">
@@ -306,12 +293,15 @@ form_template = '''<!doctype html>
 </html>
 '''
 
-@app.route("/{prefix}updateform".format(prefix=update_prefix))
-def update_form():
-     return form_template.format(prefix=update_prefix)
+#@app.route("/{prefix}updateform".format(prefix=update_prefix))
+#def update_form():
+#     return form_template.format(prefix=update_prefix)
 
 
-
-if __name__ == "__main__":
-    update_data()
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
+if (__name__ == "__main__"):
+     scheduler = BackgroundScheduler() # Scheduler object
+#     scheduler.add_job(func=print_date_time, trigger="interval", seconds=3)
+     scheduler.add_job(func=download_csv_from_github, trigger="cron", hour=10, minute=33)
+#     scheduler.add_job(func=download_csv_from_github, trigger="interval", minutes=3)
+     scheduler.start()
+     app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
