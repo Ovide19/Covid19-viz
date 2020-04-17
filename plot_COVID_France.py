@@ -55,7 +55,7 @@ class CovidData(object):
    
     def __init__(self):
 #         self.Data = pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
-         self.Data, self.download_time = download_csv_from_github()
+         self.Data, self.download_start_time, self.download_end_time = download_csv_from_github()
          self.Departements = {                
                   'DEP-29': [48.26111111, -4.058888889], 
                   'DEP-22': [48.44111111, -2.864166667], 
