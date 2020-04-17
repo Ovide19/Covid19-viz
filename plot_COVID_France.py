@@ -46,9 +46,9 @@ legend_html = '''
 def download_csv_from_github():
      download_start_time=datetime.datetime.now()
      data=pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
-     download_end_time=datetime.datetime.now()
+     download_end_time=datetime.datetime.now()  
      download_duration=download_end_time-download_start_time
-     return data, download_start_time, download_end_time, download_duration
+     return data, download_duration
 
 
 
@@ -56,7 +56,7 @@ class CovidData(object):
    
     def __init__(self):
 #         self.Data = pd.read_csv('https://raw.githubusercontent.com/opencovid19-fr/data/master/dist/chiffres-cles.csv')
-         self.Data, self.download_start_time, self.download_end_time = download_csv_from_github()
+         self.Data, self.download_duration = download_csv_from_github()
          self.Departements = {                
                   'DEP-29': [48.26111111, -4.058888889], 
                   'DEP-22': [48.44111111, -2.864166667], 
@@ -233,7 +233,7 @@ def create_map():
      CODA.map.get_root().html.add_child(folium.Element(legend_html))
 #     colormap.caption = 'Nombre de deces de COVID-19 par departement (Source: opencovid19-fr)'
 #     colormap.caption = str(datetime.datetime.now())
-     colormap.caption = str("Download duration: "+str(CODA.download_duration.seconds))
+     colormap.caption = "Download time: "+str(CODA.download_duration)
 
      CODA.map.add_child(colormap)
      
@@ -293,15 +293,6 @@ S</head>
 </html>
 '''
 
-#@app.route("/{prefix}updateform".format(prefix=update_prefix))
-#def update_form():
-#     return form_template.format(prefix=update_prefix)
-
 
 if (__name__ == "__main__"):
-#     scheduler = BackgroundScheduler() # Scheduler object
-#     scheduler.add_job(func=print_date_time, trigger="interval", seconds=3)
-#     scheduler.add_job(func=download_csv_from_github, trigger="cron", hour=10, minute=33)
-#     scheduler.add_job(func=download_csv_from_github, trigger="interval", minutes=3)
-#     scheduler.start()
      app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
