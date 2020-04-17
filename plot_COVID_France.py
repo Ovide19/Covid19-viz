@@ -25,7 +25,7 @@ import pandas as pd
 import unidecode
 import branca.colormap as cm
 colormap =cm.linear.YlOrRd_09.scale(0, 1000)
-from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.schedulers.background import BackgroundScheduler
 import time
 import datetime
      
@@ -298,9 +298,9 @@ S</head>
 
 
 if (__name__ == "__main__"):
-     scheduler = BackgroundScheduler() # Scheduler object
+#     scheduler = BackgroundScheduler() # Scheduler object
 #     scheduler.add_job(func=print_date_time, trigger="interval", seconds=3)
-     scheduler.add_job(func=download_csv_from_github, trigger="cron", hour=10, minute=33)
+#     scheduler.add_job(func=download_csv_from_github, trigger="cron", hour=10, minute=33)
 #     scheduler.add_job(func=download_csv_from_github, trigger="interval", minutes=3)
-     scheduler.start()
+#     scheduler.start()
      app.run(host='0.0.0.0', port=os.environ.get('PORT', 80))
